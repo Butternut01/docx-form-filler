@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заявка на видеоконференцсвязь</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="time"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #2c9f30;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #738474;
+        }
+        .participant {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        .remove-participant {
+            background-color: #87261f;
+            margin-top: 10px;
+        }
+        .add-participant {
+            background-color: #104e80;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Заявка на видеоконференцсвязь (ВКС)</h1>
+    <form id="vksForm">
+        <div class="form-group">
+            <label for="responsible">Ответственный сотрудник:</label>
+            <input type="text" id="responsible" name="responsible" required placeholder="ФИО, должность, контактный телефон">
+        </div>
+        
+        <div class="form-group">
+            <label for="meetingTopic">Тема совещания:</label>
+            <input type="text" id="meetingTopic" name="meetingTopic" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="needLaptop">Необходимость в предоставлении ноутбука для презентации:</label>
+            <select id="needLaptop" name="needLaptop" required>
+                <option value="Нет">Нет</option>
+                <option value="Да">Да</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="weekday">День недели проведения:</label>
+            <select id="weekday" name="weekday" required>
+                <option value="Понедельник">Понедельник</option>
+                <option value="Вторник">Вторник</option>
+                <option value="Среда">Среда</option>
+                <option value="Четверг">Четверг</option>
+                <option value="Пятница">Пятница</option>
+                <option value="Суббота">Суббота</option>
+                <option value="Воскресенье">Воскресенье</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="date">Дата проведения:</label>
+            <input type="date" id="date" name="date" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="startTime">Время начала:</label>
+            <input type="time" id="startTime" name="startTime" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="endTime">Время окончания:</label>
+            <input type="time" id="endTime" name="endTime" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="recording">Ведение записи:</label>
+            <select id="recording" name="recording" required>
+                <option value="без записи ВКС">без записи ВКС</option>
+                <option value="с записью ВКС">с записью ВКС</option>
+            </select>
+        </div>
+        
+        <h2>Список участников видеоконференции</h2>
+        <div id="participantsContainer">
+            <div class="participant" id="participant1">
+                <div class="form-group">
+                    <label for="participant1_name">ФИО (полностью):</label>
+                    <input type="text" id="participant1_name" name="participants[0][name]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant1_position">Должность (полностью):</label>
+                    <input type="text" id="participant1_position" name="participants[0][position]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant1_phone">Контактный телефон:</label>
+                    <input type="tel" id="participant1_phone" name="participants[0][phone]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant1_email">Электронный адрес почты:</label>
+                    <input type="email" id="participant1_email" name="participants[0][email]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant1_connection">Способ подключения:</label>
+                    <select id="participant1_connection" name="participants[0][connection]" required>
+                        <option value="терминал">терминал</option>
+                        <option value="ссылка">ссылка</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="participant1_location">Местонахождение:</label>
+                    <input type="text" id="participant1_location" name="participants[0][location]" required>
+                </div>
+                <button type="button" class="remove-participant" onclick="removeParticipant('participant1')">Удалить участника</button>
+            </div>
+        </div>
+        
+        <button type="button" class="add-participant" onclick="addParticipant()">Добавить участника</button>
+        
+        <div class="form-group">
+            <button type="submit">Сформировать заявку</button>
+        </div>
+    </form>
+
+    <script>
+        let participantCount = 1;
+        
+        function addParticipant() {
+            participantCount++;
+            const container = document.getElementById('participantsContainer');
+            const newParticipant = document.createElement('div');
+            newParticipant.className = 'participant';
+            newParticipant.id = 'participant' + participantCount;
+            
+            newParticipant.innerHTML = `
+                <div class="form-group">
+                    <label for="participant${participantCount}_name">ФИО (полностью):</label>
+                    <input type="text" id="participant${participantCount}_name" name="participants[${participantCount-1}][name]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant${participantCount}_position">Должность (полностью):</label>
+                    <input type="text" id="participant${participantCount}_position" name="participants[${participantCount-1}][position]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant${participantCount}_phone">Контактный телефон:</label>
+                    <input type="tel" id="participant${participantCount}_phone" name="participants[${participantCount-1}][phone]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant${participantCount}_email">Электронный адрес почты:</label>
+                    <input type="email" id="participant${participantCount}_email" name="participants[${participantCount-1}][email]" required>
+                </div>
+                <div class="form-group">
+                    <label for="participant${participantCount}_connection">Способ подключения:</label>
+                    <select id="participant${participantCount}_connection" name="participants[${participantCount-1}][connection]" required>
+                        <option value="терминал">терминал</option>
+                        <option value="ссылка">ссылка</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="participant${participantCount}_location">Местонахождение:</label>
+                    <input type="text" id="participant${participantCount}_location" name="participants[${participantCount-1}][location]" required>
+                </div>
+                <button type="button" class="remove-participant" onclick="removeParticipant('participant${participantCount}')">Удалить участника</button>
+            `;
+            
+            container.appendChild(newParticipant);
+        }
+        
+        function removeParticipant(id) {
+            if (document.querySelectorAll('.participant').length > 1) {
+                document.getElementById(id).remove();
+            } else {
+                alert('Должен быть хотя бы один участник');
+            }
+        }
+        
+        document.getElementById('vksForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                responsible: formData.get('responsible'),
+                meetingTopic: formData.get('meetingTopic'),
+                needLaptop: formData.get('needLaptop'),
+                weekday: formData.get('weekday'),
+                date: formatDate(formData.get('date')),
+                startTime: formatTime(formData.get('startTime')),
+                endTime: formatTime(formData.get('endTime')),
+                recording: formData.get('recording'),
+                participants: []
+            };
+            
+            // Get all participant data
+            const participantInputs = document.querySelectorAll('[name^="participants["]');
+            const participantCount = participantInputs.length / 6; // 6 fields per participant
+            
+            for (let i = 0; i < participantCount; i++) {
+                data.participants.push({
+                    name: formData.get(`participants[${i}][name]`),
+                    position: formData.get(`participants[${i}][position]`),
+                    phone: formData.get(`participants[${i}][phone]`),
+                    email: formData.get(`participants[${i}][email]`),
+                    connection: formData.get(`participants[${i}][connection]`),
+                    location: formData.get(`participants[${i}][location]`)
+                });
+            }
+            
+            // Send data to server
+            fetch('/generate-docx', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Заявка_на_ВКС_${data.date}.docx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => console.error('Error:', error));
+        });
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}.${month}.${year}г`;
+        }
+        
+        function formatTime(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            // Return as formatted string instead of object
+            return `${hours.padStart(2, '0')} часов ${minutes.padStart(2, '0')} минут`;
+        }
+    </script>
+</body>
+</html>
